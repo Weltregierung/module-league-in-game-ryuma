@@ -1,8 +1,8 @@
 import { EventType, MobType } from "./InGameEvent";
+import { Item, Rune, Scores, SummonerSpell } from "./AllGameData";
 
 export interface InGameState {
   gameTime: number;
-  currentPlayer: string;
   showLeaderBoard: "xp" | "gold" | false;
   targetFrameCover: boolean;
   towers: {
@@ -35,6 +35,7 @@ export interface InGameState {
     100: Objective[];
     200: Objective[];
   };
+  nextDragonType: string | "Fire";
 }
 
 export interface PlayerType {
@@ -49,7 +50,26 @@ export interface PlayerType {
   championId: string;
   championKey: number;
   team: 100 | 200;
+  isAlive: boolean;
+  health: number;
+  maxMana: number;
+  mana: number;
+  maxHealth: number;
+  otherItems: Item[];
+  isBot: boolean;
   isDead: boolean;
+  respawnTimer: number;
+  runes: {
+    keystone?: Rune;
+    primaryRuneTree?: Rune;
+    secondaryRuneTree?: Rune;
+  };
+  scores: Scores | undefined;
+  skinID: number;
+  summonerSpells: {
+    summonerSpellOne?: SummonerSpell;
+    summonerSpellTwo?: SummonerSpell;
+  };
 }
 
 export interface Objective {

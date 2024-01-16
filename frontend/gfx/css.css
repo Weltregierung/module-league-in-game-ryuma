@@ -1,0 +1,12 @@
+@font-face {
+  font-family: morganite;
+  src: url("./Morganite-Bold.ttf");
+}
+
+p {
+  font-family: morganite;
+  font-weight: 700;
+  font-size: 500px;
+  text-align: left;
+  color: white;
+}
