@@ -1,21 +1,26 @@
-import type { PluginContext } from '@rcv-prod-toolkit/types'
-import { AllGameData, Player, Event } from '../types/AllGameData'
-import { Config } from '../types/Config'
-import { ItemEpicness } from '../types/Items'
-import { InGameState as InGameStateType } from '../types/InGameState'
-import { EventType, InGameEvent, MobType, TeamType } from '../types/InGameEvent'
-import { randomUUID } from 'crypto'
-import { FarsightData } from '../types/FarsightData'
-import { Player as PlayerClass } from './Player'
+import type { PluginContext } from "@rcv-prod-toolkit/types";
+import { AllGameData, Player, Event } from "../types/AllGameData";
+import { Config } from "../types/Config";
+import { ItemEpicness } from "../types/Items";
+import { InGameState as InGameStateType } from "../types/InGameState";
+import {
+  EventType,
+  InGameEvent,
+  MobType,
+  TeamType,
+} from "../types/InGameEvent";
+import { randomUUID } from "crypto";
+import { FarsightData } from "../types/FarsightData";
+import { Player as PlayerClass } from "./Player";
 
 export class InGameState {
-  public gameState: InGameStateType
-  public gameData: AllGameData[] = []
-  public farsightDataArray: FarsightData[] = []
-  public itemEpicness: number[]
+  public gameState: InGameStateType;
+  public gameData: AllGameData[] = [];
+  public farsightDataArray: FarsightData[] = [];
+  public itemEpicness: number[];
 
   public actions: Map<string, (allGameData: AllGameData, id: string) => void> =
-    new Map()
+    new Map();
 
   constructor(
     private namespace: string,
@@ -24,36 +29,36 @@ export class InGameState {
     private state: any,
     private statics: any
   ) {
-    this.itemEpicness = this.config.items?.map((i) => ItemEpicness[i])
+    this.itemEpicness = this.config.items?.map((i) => ItemEpicness[i]);
 
     this.gameState = {
       gameTime: 0,
-      currentPlayer: '',
+      currentPlayer: "",
       showLeaderBoard: false,
       towers: {
         100: {
           L: {},
           C: {},
-          R: {}
+          R: {},
         },
         200: {
           L: {},
           C: {},
-          R: {}
-        }
+          R: {},
+        },
       },
       platings: {
         showPlatings: false,
         100: {
           L: 0,
           C: 0,
-          R: 0
+          R: 0,
         },
         200: {
           L: 0,
           C: 0,
-          R: 0
-        }
+          R: 0,
+        },
       },
       showInhibitors: null,
       inhibitors: {
@@ -63,22 +68,22 @@ export class InGameState {
             respawnAt: 0,
             respawnIn: 0,
             percent: 0,
-            time: 0
+            time: 0,
           },
           C1: {
             alive: true,
             respawnAt: 0,
             respawnIn: 0,
             percent: 0,
-            time: 0
+            time: 0,
           },
           R1: {
             alive: true,
             respawnAt: 0,
             respawnIn: 0,
             percent: 0,
-            time: 0
-          }
+            time: 0,
+          },
         },
         200: {
           L1: {
@@ -86,347 +91,376 @@ export class InGameState {
             respawnAt: 0,
             respawnIn: 0,
             percent: 0,
-            time: 0
+            time: 0,
           },
           C1: {
             alive: true,
             respawnAt: 0,
             respawnIn: 0,
             percent: 0,
-            time: 0
+            time: 0,
           },
           R1: {
             alive: true,
             respawnAt: 0,
             respawnIn: 0,
             percent: 0,
-            time: 0
-          }
-        }
+            time: 0,
+          },
+        },
       },
       player: [],
       gold: {
         100: 0,
-        200: 0
+        200: 0,
       },
       kills: {
         100: 0,
-        200: 0
+        200: 0,
       },
       goldGraph: {},
       objectives: {
         100: [],
-        200: []
-      }
-    }
+        200: [],
+      },
+    };
 
     this.ctx.LPTE.emit({
       meta: {
         namespace: this.namespace,
-        type: 'update',
-        version: 1
+        type: "update",
+        version: 1,
       },
-      state: this.convertGameState()
-    })
+      state: this.convertGameState(),
+    });
 
     this.ctx.LPTE.emit({
       meta: {
         namespace: this.namespace,
-        type: 'pp-update',
-        version: 1
+        type: "pp-update",
+        version: 1,
       },
-      type: 'Baron',
+      type: "Baron",
       ongoing: false,
       percent: 0,
-      respawnIn: 0
-    })
+      respawnIn: 0,
+    });
 
     this.ctx.LPTE.emit({
       meta: {
         namespace: this.namespace,
-        type: 'pp-update',
-        version: 1
+        type: "pp-update",
+        version: 1,
       },
-      type: 'Dragon',
+      type: "Dragon",
       ongoing: false,
       percent: 0,
-      respawnIn: 0
-    })
+      respawnIn: 0,
+    });
 
-    this.updateState()
+    this.updateState();
   }
 
   private convertGameState() {
     return {
       ...this.gameState,
-      gameTime: this.gameState.gameTime + (this.config.delay / 1000),
+      gameTime: this.gameState.gameTime + this.config.delay / 1000,
       player: Object.values(this.gameState.player).map((p) => {
         return {
           ...p,
-          items: [...p.items.values()]
-        }
-      })
-    }
+          items: [...p.items.values()],
+        };
+      }),
+    };
   }
 
   public updateState() {
     this.ctx.LPTE.emit({
       meta: {
-        namespace: 'module-league-state',
-        type: 'save-live-game-stats',
-        version: 1
+        namespace: "module-league-state",
+        type: "save-live-game-stats",
+        version: 1,
       },
-      gameState: this.convertGameState()
-    })
+      gameState: this.convertGameState(),
+    });
   }
 
   public handelData(allGameData: AllGameData): void {
     if (this.gameData.length > 0) {
-      let previousGameData = this.gameData[this.gameData.length - 1]
+      let previousGameData = this.gameData[this.gameData.length - 1];
 
       if (allGameData.gameData.gameTime < previousGameData.gameData.gameTime) {
         this.gameData = this.gameData.filter(
           (gd) => gd.gameData.gameTime < allGameData.gameData.gameTime
-        )
+        );
 
-        if (this.gameData.length <= 0) return
-        previousGameData = this.gameData[this.gameData.length - 1]
+        if (this.gameData.length <= 0) return;
+        previousGameData = this.gameData[this.gameData.length - 1];
       }
 
-      this.gameState.gameTime = allGameData.gameData.gameTime
+      this.gameState.gameTime = allGameData.gameData.gameTime;
 
       allGameData.allPlayers.forEach((p, i) => {
-        if (this.gameState.player.find(pl => pl.summonerName === p.summonerName) !== undefined) return
+        if (
+          this.gameState.player.find(
+            (pl) => pl.summonerName === p.summonerName
+          ) !== undefined
+        )
+          return;
 
-        const champ = this.statics.champions.find((c: any) => c.name === p.championName)
-        this.gameState.player.splice(i, 0, new PlayerClass(
-          p.summonerName,
-          p.team,
-          p.championName,
-          champ.id,
-          champ.key
-        ));
-      })
+        const champ = this.statics.champions.find(
+          (c: any) => c.name === p.championName
+        );
+        this.gameState.player.splice(
+          i,
+          0,
+          new PlayerClass(
+            p.summonerName,
+            p.team,
+            p.championName,
+            champ.id,
+            champ.key
+          )
+        );
+      });
 
       setTimeout(() => {
-        this.checkPlayerUpdate(allGameData)
-        this.checkEventUpdate(allGameData, previousGameData)
+        this.checkPlayerUpdate(allGameData);
+        this.checkEventUpdate(allGameData, previousGameData);
 
         for (const [id, func] of this.actions.entries()) {
-          func(allGameData, id)
+          func(allGameData, id);
         }
-      }, this.config.delay / 2)
+      }, this.config.delay / 2);
     }
 
-    this.gameData.push(allGameData)
+    this.gameData.push(allGameData);
   }
 
   public handelReplayData(replayData: any): void {
-    if (replayData.selectionName === '' || replayData.selectionName === undefined) return
+    if (
+      replayData.selectionName === "" ||
+      replayData.selectionName === undefined
+    )
+      return;
 
     setTimeout(() => {
-      if (replayData.selectionName && this.gameState.currentPlayer) return
+      if (replayData.selectionName && this.gameState.currentPlayer) return;
 
-      this.gameState.currentPlayer = replayData.selectionName
+      this.gameState.currentPlayer = replayData.selectionName;
 
-      const playerIndex = this.gameState.player.findIndex(p => p.summonerName === replayData.selectionName)
+      const playerIndex = this.gameState.player.findIndex(
+        (p) => p.summonerName === replayData.selectionName
+      );
 
-      if (playerIndex === -1) return
+      if (playerIndex === -1) return;
 
-      const firstPlayerIndex = playerIndex < 5 ? playerIndex : playerIndex - 5
-      const secondPlayerIndex = firstPlayerIndex + 5
+      const firstPlayerIndex = playerIndex < 5 ? playerIndex : playerIndex - 5;
+      const secondPlayerIndex = firstPlayerIndex + 5;
 
       this.ctx.LPTE.emit({
         meta: {
           namespace: this.namespace,
-          type: 'player-change',
-          version: 1
+          type: "player-change",
+          version: 1,
         },
         player1: this.gameState.player[firstPlayerIndex].summonerName,
         player2: this.gameState.player[secondPlayerIndex].summonerName,
-      })
-      
-    }, this.config.delay / 2)
+      });
+    }, this.config.delay / 2);
   }
 
   public handelFarsightData(farsightData: FarsightData): void {
-    if (farsightData.champions === undefined || !Array.isArray(farsightData.champions) || farsightData.champions.length <= 0) return
+    if (
+      farsightData.champions === undefined ||
+      !Array.isArray(farsightData.champions) ||
+      farsightData.champions.length <= 0
+    )
+      return;
 
     if (this.farsightDataArray.length > 0) {
-      let previousFarsightData = this.farsightDataArray[this.farsightDataArray.length - 1]
+      let previousFarsightData =
+        this.farsightDataArray[this.farsightDataArray.length - 1];
 
       if (farsightData.gameTime < previousFarsightData?.gameTime) {
         this.farsightDataArray = this.farsightDataArray.filter(
           (gd) => gd.gameTime < farsightData.gameTime
-        )
+        );
 
-        if (this.farsightDataArray.length <= 0) return
-        previousFarsightData = this.farsightDataArray[this.farsightDataArray.length - 1]
+        if (this.farsightDataArray.length <= 0) return;
+        previousFarsightData =
+          this.farsightDataArray[this.farsightDataArray.length - 1];
       }
     }
 
-    this.farsightDataArray.push(farsightData)
+    this.farsightDataArray.push(farsightData);
 
-    let gold100 = 0
-    let gold200 = 0
+    let gold100 = 0;
+    let gold200 = 0;
 
     const champions = farsightData.champions.filter((c, i, a) => {
-      return a.findIndex(ci => ci.displayName === c.displayName) === i
-    })
+      return a.findIndex((ci) => ci.displayName === c.displayName) === i;
+    });
 
     for (const champion of champions) {
       for (const player in this.gameState.player) {
-        if (this.gameState.player[player].summonerName !== champion.displayName && this.gameState.player[player].championName !== champion.name && this.gameState.player[player].championId !== champion.name) continue
+        if (
+          this.gameState.player[player].summonerName !== champion.displayName &&
+          this.gameState.player[player].championName !== champion.name &&
+          this.gameState.player[player].championId !== champion.name
+        )
+          continue;
 
-        this.gameState.player[player].experience = champion.experience
-        this.gameState.player[player].currentGold = champion.currentGold
-        this.gameState.player[player].totalGold = champion.totalGold
+        this.gameState.player[player].experience = champion.experience;
+        this.gameState.player[player].currentGold = champion.currentGold;
+        this.gameState.player[player].totalGold = champion.totalGold;
       }
 
       if (champion.team === 100) {
-        gold100 += champion.totalGold
+        gold100 += champion.totalGold;
       } else if (champion.team === 200) {
-        gold200 += champion.totalGold
+        gold200 += champion.totalGold;
       }
     }
 
-    this.gameState.goldGraph[Math.round(farsightData.gameTime)] = gold100 - gold200
-    this.gameState.gold[100] = gold100
-    this.gameState.gold[200] = gold200
+    this.gameState.goldGraph[Math.round(farsightData.gameTime)] =
+      gold100 - gold200;
+    this.gameState.gold[100] = gold100;
+    this.gameState.gold[200] = gold200;
 
-    const state = this.convertGameState()
+    const state = this.convertGameState();
 
     setTimeout(() => {
       this.ctx.LPTE.emit({
         meta: {
           namespace: this.namespace,
-          type: 'update',
-          version: 1
+          type: "update",
+          version: 1,
         },
-        state
-      })
-    }, this.config.delay / 2)
+        state,
+      });
+    }, this.config.delay / 2);
   }
 
   public handelEvent(event: InGameEvent): void {
-    if (!Object.values(EventType).includes(event.eventname)) return
-    if (event.eventname === EventType.StructureKill) return
+    if (!Object.values(EventType).includes(event.eventname)) return;
+    if (event.eventname === EventType.StructureKill) return;
 
     setTimeout(() => {
-      const team = event.sourceTeam === TeamType.Order ? 100 : 200
+      const team = event.sourceTeam === TeamType.Order ? 100 : 200;
       const time =
-        this.gameData[this.gameData.length - 1]?.gameData.gameTime ?? 0
+        this.gameData[this.gameData.length - 1]?.gameData.gameTime ?? 0;
 
       if (event.eventname === EventType.TurretPlateDestroyed) {
-        const split = event.other.split('_') as string[]
-        const lane = split[2] as 'L' | 'C' | 'R'
-        this.gameState.platings[team][lane] += 1
+        const split = event.other.split("_") as string[];
+        const lane = split[2] as "L" | "C" | "R";
+        this.gameState.platings[team][lane] += 1;
 
         this.ctx.LPTE.emit({
           meta: {
             namespace: this.namespace,
-            type: 'platings-update',
-            version: 1
+            type: "platings-update",
+            version: 1,
           },
-          platings: this.gameState.platings
-        })
-        return
+          platings: this.gameState.platings,
+        });
+        return;
       }
 
       this.gameState.objectives[team].push({
         type: event.eventname,
         mob: event.other as MobType,
-        time
-      })
+        time,
+      });
 
-      this.updateState()
+      this.updateState();
 
       if (
         event.eventname === EventType.DragonKill &&
-        this.config.events?.includes('Dragons')
+        this.config.events?.includes("Dragons")
       ) {
         if (event.other === MobType.ElderDragon) {
-          this.elderKill(event)
+          this.elderKill(event);
         }
 
         this.ctx.LPTE.emit({
           meta: {
             namespace: this.namespace,
-            type: 'event',
-            version: 1
+            type: "event",
+            version: 1,
           },
-          name: 'Dragon',
+          name: "Dragon",
           type: this.convertDragon(event.other),
           team,
-          time
-        })
+          time,
+        });
       } else if (
         event.eventname === EventType.BaronKill &&
-        this.config.events?.includes('Barons')
+        this.config.events?.includes("Barons")
       ) {
-        this.baronKill(event)
+        this.baronKill(event);
       } else if (
         event.eventname === EventType.HeraldKill &&
-        this.config.events?.includes('Heralds')
+        this.config.events?.includes("Heralds")
       ) {
         this.ctx.LPTE.emit({
           meta: {
             namespace: this.namespace,
-            type: 'event',
-            version: 1
+            type: "event",
+            version: 1,
           },
-          name: 'Herald',
-          type: 'Herald',
+          name: "Herald",
+          type: "Herald",
           team,
-          time
-        })
+          time,
+        });
       }
-    }, this.config.delay)
+    }, this.config.delay);
   }
 
   private convertDragon(dragon: MobType): string {
     switch (dragon) {
       case MobType.HextechDragon:
-        return 'Hextech'
+        return "Hextech";
       case MobType.ChemtechDragon:
-        return 'Chemtech'
+        return "Chemtech";
       case MobType.CloudDragon:
-        return 'Cloud'
+        return "Cloud";
       case MobType.ElderDragon:
-        return 'Elder'
+        return "Elder";
       case MobType.InfernalDragon:
-        return 'Infernal'
+        return "Infernal";
       case MobType.MountainDragon:
-        return 'Mountain'
+        return "Mountain";
       case MobType.OceanDragon:
-        return 'Ocean'
+        return "Ocean";
       default:
-        return 'Air'
+        return "Air";
     }
   }
 
   private baronKill(event: InGameEvent): void {
-    const cAllGameData = this.gameData[this.gameData.length - 1]
+    const cAllGameData = this.gameData[this.gameData.length - 1];
 
-    const team = event.sourceTeam === TeamType.Order ? 100 : 200
-    const time = Math.round(cAllGameData?.gameData?.gameTime || 0)
-    const type = 'Baron'
+    const team = event.sourceTeam === TeamType.Order ? 100 : 200;
+    const time = Math.round(cAllGameData?.gameData?.gameTime || 0);
+    const type = "Baron";
 
     this.ctx.LPTE.emit({
       meta: {
         namespace: this.namespace,
-        type: 'event',
-        version: 1
+        type: "event",
+        version: 1,
       },
-      name: 'Baron',
+      name: "Baron",
       type,
       team,
-      time
-    })
+      time,
+    });
 
-    if (!this.config.ppTimer) return
+    if (!this.config.ppTimer) return;
 
-    const respawnAt = time + 60 * 3
+    const respawnAt = time + 60 * 3;
 
     const data = {
       time,
@@ -438,26 +472,26 @@ export class InGameState {
         .filter(
           (p) =>
             !p.isDead &&
-            (team === 100 ? p.team === 'ORDER' : p.team === 'CHAOS')
+            (team === 100 ? p.team === "ORDER" : p.team === "CHAOS")
         )
         .map((p) => p.summonerName),
       dead: cAllGameData.allPlayers
         .filter(
           (p) =>
-            p.isDead && (team === 100 ? p.team === 'ORDER' : p.team === 'CHAOS')
+            p.isDead && (team === 100 ? p.team === "ORDER" : p.team === "CHAOS")
         )
         .map((p) => p.summonerName),
       team,
       respawnAt: respawnAt,
       respawnIn: 60 * 3,
-      percent: 100
-    }
+      percent: 100,
+    };
 
     this.ctx.LPTE.emit({
       meta: {
         namespace: this.namespace,
-        type: 'pp-update',
-        version: 1
+        type: "pp-update",
+        version: 1,
       },
       type,
       team,
@@ -465,99 +499,102 @@ export class InGameState {
       ongoing: data.ongoing,
       percent: data.percent,
       respawnIn: data.respawnIn,
-      respawnAt: data.respawnAt
-    })
+      respawnAt: data.respawnAt,
+    });
 
-    this.actions.set(type + '-' + randomUUID(), (allGameData, i) => {
-      const gameState = allGameData.gameData
-      const diff = respawnAt - Math.round(gameState.gameTime)
-      const percent = Math.round((diff * 100) / (60 * 3))
+    this.actions.set(type + "-" + randomUUID(), (allGameData, i) => {
+      const gameState = allGameData.gameData;
+      const diff = respawnAt - Math.round(gameState.gameTime);
+      const percent = Math.round((diff * 100) / (60 * 3));
 
-      const goldDifBlue = this.gameState.gold[100] - data.goldBaseBlue
-      const goldDifRed = this.gameState.gold[200] - data.goldBaseRed
+      const goldDifBlue = this.gameState.gold[100] - data.goldBaseBlue;
+      const goldDifRed = this.gameState.gold[200] - data.goldBaseRed;
 
-      const goldDiff = team === 100 ? 1500 + goldDifBlue - goldDifRed : 1500 + goldDifRed - goldDifBlue
+      const goldDiff =
+        team === 100
+          ? 1500 + goldDifBlue - goldDifRed
+          : 1500 + goldDifRed - goldDifBlue;
 
       data.alive = allGameData.allPlayers
         .filter(
           (p) =>
             !p.isDead &&
-            (team === 100 ? p.team === 'ORDER' : p.team === 'CHAOS') &&
+            (team === 100 ? p.team === "ORDER" : p.team === "CHAOS") &&
             !data.dead.includes(p.summonerName)
         )
-        .map((p) => p.summonerName)
+        .map((p) => p.summonerName);
       data.dead = [
         ...data.dead,
         ...allGameData.allPlayers
           .filter(
             (p) =>
               p.isDead &&
-              (team === 100 ? p.team === 'ORDER' : p.team === 'CHAOS')
+              (team === 100 ? p.team === "ORDER" : p.team === "CHAOS")
           )
-          .map((p) => p.summonerName)
-      ]
+          .map((p) => p.summonerName),
+      ];
 
       this.ctx.LPTE.emit({
         meta: {
           namespace: this.namespace,
-          type: 'pp-update',
-          version: 1
+          type: "pp-update",
+          version: 1,
         },
-        type: 'Baron',
+        type: "Baron",
         team,
         goldDiff,
         ongoing: data.ongoing,
         percent,
-        respawnIn: diff
-      })
+        respawnIn: diff,
+      });
 
       if (
         diff <= 0 ||
         data.alive.length <= 0 ||
         time > gameState.gameTime + this.config.delay / 1000
       ) {
-        data.ongoing = false
+        data.ongoing = false;
         this.ctx.LPTE.emit({
           meta: {
             namespace: this.namespace,
-            type: 'pp-update',
-            version: 1
+            type: "pp-update",
+            version: 1,
           },
-          type: 'Baron',
+          type: "Baron",
           team,
           goldDiff,
           ongoing: data.ongoing,
           percent: 100,
-          respawnIn: 60 * 3
-        })
+          respawnIn: 60 * 3,
+        });
 
-        this.actions.delete(i)
+        this.actions.delete(i);
       }
-    })
+    });
   }
 
   private elderKill(event: InGameEvent): void {
-    const cAllGameData = this.gameData[this.gameData.length - 1]
+    const cAllGameData = this.gameData[this.gameData.length - 1];
 
-    const team = event.sourceTeam === TeamType.Order ? 100 : 200
-    const time = Math.round(cAllGameData?.gameData?.gameTime || 0)
-    const type = 'Dragon'
+    const team = event.sourceTeam === TeamType.Order ? 100 : 200;
+    const time = Math.round(cAllGameData?.gameData?.gameTime || 0);
+    const type = "Dragon";
 
     this.ctx.LPTE.emit({
       meta: {
         namespace: this.namespace,
-        type: 'event',
-        version: 1
+        type: "event",
+        version: 1,
       },
-      name: 'Elder',
+      name: "Elder",
       type,
       team,
-      time
-    })
+      time,
+    });
 
-    if (!this.config.ppTimer) return
+    if (!this.config.ppTimer) return;
 
-    const respawnAt = time + 60 * 3
+    const respawnAt = time + 60 * 3;
 
     const data = {
       time,
@@ -569,26 +606,26 @@ export class InGameState {
         .filter(
           (p) =>
             !p.isDead &&
-            (team === 100 ? p.team === 'ORDER' : p.team === 'CHAOS')
+            (team === 100 ? p.team === "ORDER" : p.team === "CHAOS")
         )
         .map((p) => p.summonerName),
       dead: cAllGameData.allPlayers
         .filter(
           (p) =>
-            p.isDead && (team === 100 ? p.team === 'ORDER' : p.team === 'CHAOS')
+            p.isDead && (team === 100 ? p.team === "ORDER" : p.team === "CHAOS")
         )
         .map((p) => p.summonerName),
       team,
       respawnAt: respawnAt,
       respawnIn: 60 * 3,
-      percent: 100
-    }
+      percent: 100,
+    };
 
     this.ctx.LPTE.emit({
       meta: {
         namespace: this.namespace,
-        type: 'pp-update',
-        version: 1
+        type: "pp-update",
+        version: 1,
       },
       type,
       team,
@@ -596,155 +633,169 @@ export class InGameState {
       ongoing: data.ongoing,
       percent: data.percent,
       respawnIn: data.respawnIn,
-      respawnAt: data.respawnAt
-    })
+      respawnAt: data.respawnAt,
+    });
 
-    this.actions.set(type + '-' + randomUUID(), (allGameData, i) => {
-      const gameState = allGameData.gameData
-      const diff = respawnAt - Math.round(gameState.gameTime)
-      const percent = Math.round((diff * 100) / (60 * 3))
+    this.actions.set(type + "-" + randomUUID(), (allGameData, i) => {
+      const gameState = allGameData.gameData;
+      const diff = respawnAt - Math.round(gameState.gameTime);
+      const percent = Math.round((diff * 100) / (60 * 3));
 
-      const goldDifBlue = this.gameState.gold[100] - data.goldBaseBlue
-      const goldDifRed = this.gameState.gold[200] - data.goldBaseRed
+      const goldDifBlue = this.gameState.gold[100] - data.goldBaseBlue;
+      const goldDifRed = this.gameState.gold[200] - data.goldBaseRed;
 
-      const goldDiff = team === 100 ? 1500 + goldDifBlue - goldDifRed : 1500 + goldDifRed - goldDifBlue
+      const goldDiff =
+        team === 100
+          ? 1500 + goldDifBlue - goldDifRed
+          : 1500 + goldDifRed - goldDifBlue;
 
       data.alive = allGameData.allPlayers
         .filter(
           (p) =>
             !p.isDead &&
-            (team === 100 ? p.team === 'ORDER' : p.team === 'CHAOS') &&
+            (team === 100 ? p.team === "ORDER" : p.team === "CHAOS") &&
             !data.dead.includes(p.summonerName)
         )
-        .map((p) => p.summonerName)
+        .map((p) => p.summonerName);
       data.dead = [
         ...data.dead,
         ...allGameData.allPlayers
           .filter(
             (p) =>
               p.isDead &&
-              (team === 100 ? p.team === 'ORDER' : p.team === 'CHAOS')
+              (team === 100 ? p.team === "ORDER" : p.team === "CHAOS")
           )
-          .map((p) => p.summonerName)
-      ]
+          .map((p) => p.summonerName),
+      ];
 
       this.ctx.LPTE.emit({
         meta: {
           namespace: this.namespace,
-          type: 'pp-update',
-          version: 1
+          type: "pp-update",
+          version: 1,
         },
-        type: 'Dragon',
+        type: "Dragon",
         team,
         goldDiff,
         ongoing: data.ongoing,
         percent,
-        respawnIn: diff
-      })
+        respawnIn: diff,
+      });
 
       if (
         diff <= 0 ||
         data.alive.length <= 0 ||
         time > gameState.gameTime + this.config.delay / 1000
       ) {
-        data.ongoing = false
+        data.ongoing = false;
         this.ctx.LPTE.emit({
           meta: {
             namespace: this.namespace,
-            type: 'pp-update',
-            version: 1
+            type: "pp-update",
+            version: 1,
           },
-          type: 'Dragon',
+          type: "Dragon",
           team,
           goldDiff,
           ongoing: data.ongoing,
           percent: 100,
-          respawnIn: 60 * 3
-        })
+          respawnIn: 60 * 3,
+        });
 
-        this.actions.delete(i)
+        this.actions.delete(i);
       }
-    })
+    });
   }
 
   private checkPlayerUpdate(allGameData: AllGameData) {
-    if (allGameData.allPlayers.length === 0) return
+    if (allGameData.allPlayers.length === 0) return;
 
-    this.gameState.kills[100] = allGameData.allPlayers.filter(p => p.team === "ORDER").reduce((v, c) => v + c.scores.kills, 0)
-    this.gameState.kills[200] = allGameData.allPlayers.filter(p => p.team === "CHAOS").reduce((v, c) => v + c.scores.kills, 0)
+    this.gameState.kills[100] = allGameData.allPlayers
+      .filter((p) => p.team === "ORDER")
+      .reduce((v, c) => v + c.scores.kills, 0);
+    this.gameState.kills[200] = allGameData.allPlayers
+      .filter((p) => p.team === "CHAOS")
+      .reduce((v, c) => v + c.scores.kills, 0);
 
     allGameData.allPlayers.forEach((player, i) => {
-      this.checkNameUpdate(player, i)
-      this.checkLevelUpdate(player, i)
-      this.checkItemUpdate(player, i)
-    })
+      this.checkNameUpdate(player, i);
+      this.checkLevelUpdate(player, i);
+      this.checkItemUpdate(player, i);
+    });
   }
 
   private checkNameUpdate(currentPlayerState: Player, id: number) {
     if (
-      this.gameState.player[id] === undefined || this.gameState.player[id]?.summonerName === currentPlayerState.summonerName
+      this.gameState.player[id] === undefined ||
+      this.gameState.player[id]?.summonerName ===
+        currentPlayerState.summonerName
     )
-      return
+      return;
 
-    this.gameState.player[id].summonerName = currentPlayerState.summonerName
+    this.gameState.player[id].summonerName = currentPlayerState.summonerName;
     const member = this.state.lcu.lobby?.members?.find(
       (m: any) => m.summonerName === currentPlayerState.summonerName
-    )
+    );
     this.gameState.player[id].nickname =
-      member?.nickname ?? currentPlayerState.summonerName
-    this.updateState()
+      member?.nickname ?? currentPlayerState.summonerName;
+    this.updateState();
 
     this.ctx.LPTE.emit({
       meta: {
-        type: 'name-update',
+        type: "name-update",
         namespace: this.namespace,
-        version: 1
+        version: 1,
       },
-      team: currentPlayerState.team === 'ORDER' ? 100 : 200,
+      team: currentPlayerState.team === "ORDER" ? 100 : 200,
       player: id,
-      nickname: this.gameState.player[id].nickname
-    })
+      nickname: this.gameState.player[id].nickname,
+    });
   }
 
   private checkLevelUpdate(currentPlayerState: Player, id: number) {
-    if (this.gameState.player[id] === undefined || currentPlayerState.level <= this.gameState.player[id]?.level) return
+    if (
+      this.gameState.player[id] === undefined ||
+      currentPlayerState.level <= this.gameState.player[id]?.level
+    )
+      return;
 
-    this.gameState.player[id].level = currentPlayerState.level
-    this.updateState()
+    this.gameState.player[id].level = currentPlayerState.level;
+    this.updateState();
 
-    if (!this.config.level.includes(currentPlayerState.level.toString())) return
+    if (!this.config.level.includes(currentPlayerState.level.toString()))
+      return;
 
     this.ctx.LPTE.emit({
       meta: {
-        type: 'level-update',
+        type: "level-update",
         namespace: this.namespace,
-        version: 1
+        version: 1,
       },
-      team: currentPlayerState.team === 'ORDER' ? 100 : 200,
+      team: currentPlayerState.team === "ORDER" ? 100 : 200,
       player: id,
-      level: currentPlayerState.level
-    })
+      level: currentPlayerState.level,
+    });
   }
 
   private checkItemUpdate(currentPlayerState: Player, id: number) {
-    if (this.gameState.player[id] === undefined) return
+    if (this.gameState.player[id] === undefined) return;
 
-    const previousItems = this.gameState.player[id].items
+    const previousItems = this.gameState.player[id].items;
 
     if (previousItems.has(3513)) {
       if (!currentPlayerState.items.find((i) => i.itemID === 3513)) {
-        previousItems.delete(3513)
+        previousItems.delete(3513);
       }
     }
 
     for (const item of currentPlayerState.items) {
-      const itemID = item.itemID
-      if (previousItems.has(itemID)) continue
+      const itemID = item.itemID;
+      if (previousItems.has(itemID)) continue;
 
       const itemBinFind = this.statics.itemBin.find(
         (i: any) => i.itemID === itemID
-      )
-      if (itemBinFind === undefined) continue
+      );
+      if (itemBinFind === undefined) continue;
 
       if (itemID === 3513) {
         this.handelEvent({
@@ -754,30 +805,30 @@ export class InGameState {
           source: currentPlayerState.summonerName,
           sourceID: id,
           sourceTeam:
-            currentPlayerState.team === 'CHAOS'
+            currentPlayerState.team === "CHAOS"
               ? TeamType.Chaos
-              : TeamType.Order
-        })
-        this.gameState.player[id].items.add(itemID)
-        return
+              : TeamType.Order,
+        });
+        this.gameState.player[id].items.add(itemID);
+        return;
       }
 
-      if (!this.itemEpicness.includes(itemBinFind.epicness)) continue
-      if (itemBinFind.epicness !== 7 && item.consumable) continue
+      if (!this.itemEpicness.includes(itemBinFind.epicness)) continue;
+      if (itemBinFind.epicness !== 7 && item.consumable) continue;
 
-      this.gameState.player[id].items.add(itemID)
-      this.updateState()
+      this.gameState.player[id].items.add(itemID);
+      this.updateState();
 
       this.ctx.LPTE.emit({
         meta: {
-          type: 'item-update',
+          type: "item-update",
           namespace: this.namespace,
-          version: 1
+          version: 1,
         },
-        team: currentPlayerState.team === 'ORDER' ? 100 : 200,
+        team: currentPlayerState.team === "ORDER" ? 100 : 200,
         player: id,
-        item: itemID
-      })
+        item: itemID,
+      });
     }
   }
 
@@ -785,65 +836,65 @@ export class InGameState {
     allGameData: AllGameData,
     previousGameData: AllGameData
   ) {
-    if (allGameData.events.Events.length === 0) return
+    if (allGameData.events.Events.length === 0) return;
 
     const newEvents = allGameData.events.Events.slice(
       previousGameData.events.Events.length || 0
-    )
+    );
 
     newEvents.forEach((event) => {
-      if (event.EventName === 'InhibKilled') {
-        this.handleInhibEvent(event, allGameData)
-      } else if (event.EventName === 'TurretKilled') {
-        this.handleTowerEvent(event, allGameData)
-      } else if (event.EventName === 'ChampionKill') {
-        this.handleKillEvent(event, allGameData)
+      if (event.EventName === "InhibKilled") {
+        this.handleInhibEvent(event, allGameData);
+      } else if (event.EventName === "TurretKilled") {
+        this.handleTowerEvent(event, allGameData);
+      } else if (event.EventName === "ChampionKill") {
+        this.handleKillEvent(event, allGameData);
       }
-    })
+    });
   }
 
   private handleInhibEvent(event: Event, allGameData: AllGameData) {
-    const split = event.InhibKilled.split('_') as string[]
-    const team = split[1] === 'T1' ? 100 : 200
-    const lane = split[2] as 'L1' | 'C1' | 'R1'
-    const respawnAt = Math.round(event.EventTime) + 60 * 5
-    const time = event.EventTime
+    const split = event.InhibKilled.split("_") as string[];
+    const team = split[1] === "T1" ? 100 : 200;
+    const lane = split[2] as "L1" | "C1" | "R1";
+    const respawnAt = Math.round(event.EventTime) + 60 * 5;
+    const time = event.EventTime;
 
-    if (!this.gameState.inhibitors[team][lane].alive) return
+    if (!this.gameState.inhibitors[team][lane].alive) return;
 
     this.gameState.inhibitors[team][lane] = {
       alive: false,
       respawnAt: respawnAt,
       respawnIn: 60 * 5,
       percent: 100,
-      time
-    }
-    this.updateState()
+      time,
+    };
+    this.updateState();
 
     this.actions.set(event.InhibKilled, (allGameData, i) => {
-      const gameState = allGameData.gameData
-      const diff = respawnAt - Math.round(gameState.gameTime)
-      const percent = Math.round((diff * 100) / (60 * 5))
+      const gameState = allGameData.gameData;
+      const diff = respawnAt - Math.round(gameState.gameTime);
+      const percent = Math.round((diff * 100) / (60 * 5));
 
       this.gameState.inhibitors[team][lane] = {
         alive: false,
         respawnAt: respawnAt,
         respawnIn: diff,
         percent: 100,
-        time: this.gameState.inhibitors[team][lane].time
-      }
+        time: this.gameState.inhibitors[team][lane].time,
+      };
 
       this.ctx.LPTE.emit({
         meta: {
           namespace: this.namespace,
-          type: 'inhib-update',
-          version: 1
+          type: "inhib-update",
+          version: 1,
         },
         team,
         lane,
         percent,
-        respawnIn: diff
-      })
+        respawnIn: diff,
+      });
 
       if (diff <= 0 || time > gameState.gameTime) {
         this.gameState.inhibitors[team][lane] = {
@@ -851,147 +902,147 @@ export class InGameState {
           respawnAt: 0,
           respawnIn: 0,
           percent: 0,
-          time: 0
-        }
+          time: 0,
+        };
 
-        this.updateState()
-        this.actions.delete(i)
+        this.updateState();
+        this.actions.delete(i);
       }
-    })
+    });
 
     if (this.config.killfeed) {
       this.ctx.LPTE.emit({
         meta: {
           namespace: this.namespace,
-          type: 'kill-update',
-          version: 1
+          type: "kill-update",
+          version: 1,
         },
         assists: event.Assisters.map((a: string) => {
           return allGameData.allPlayers
             .find((p) => {
-              return p.summonerName === a
+              return p.summonerName === a;
             })
-            ?.rawChampionName.split('_')[3]
+            ?.rawChampionName.split("_")[3];
         }),
-        other: 'Inhib',
-        source: event.KillerName.startsWith('Minion')
-          ? 'Minion'
-          : event.KillerName.startsWith('SRU_Herald')
-            ? 'Herald'
-            : // TODO Thats for all other creeps for now until we have some better icons for them
-            event.KillerName.startsWith('SRU')
-              ? 'Minion'
-              : allGameData.allPlayers
-                .find((p) => {
-                  return p.summonerName === event.KillerName
-                })
-                ?.rawChampionName.split('_')[3],
-        team: team === 100 ? 200 : 100
-      })
+        other: "Inhib",
+        source: event.KillerName.startsWith("Minion")
+          ? "Minion"
+          : event.KillerName.startsWith("SRU_Herald")
+          ? "Herald"
+          : // TODO Thats for all other creeps for now until we have some better icons for them
+          event.KillerName.startsWith("SRU")
+          ? "Minion"
+          : allGameData.allPlayers
+              .find((p) => {
+                return p.summonerName === event.KillerName;
+              })
+              ?.rawChampionName.split("_")[3],
+        team: team === 100 ? 200 : 100,
+      });
     }
   }
 
   private handleTowerEvent(event: Event, allGameData: AllGameData) {
-    if (event.TurretKilled === 'Obelisk') return
+    if (event.TurretKilled === "Obelisk") return;
 
-    const split = event.TurretKilled.split('_') as string[]
-    const team = split[1] === 'T1' ? 100 : 200
-    const lane = split[2] as 'L' | 'C' | 'R'
-    const turret = split[3]
+    const split = event.TurretKilled.split("_") as string[];
+    const team = split[1] === "T1" ? 100 : 200;
+    const lane = split[2] as "L" | "C" | "R";
+    const turret = split[3];
 
     if (this.config.killfeed) {
       this.ctx.LPTE.emit({
         meta: {
           namespace: this.namespace,
-          type: 'kill-update',
-          version: 1
+          type: "kill-update",
+          version: 1,
         },
         assists: event.Assisters.map((a: string) => {
           return allGameData.allPlayers
             .find((p) => {
-              return p.summonerName === a
+              return p.summonerName === a;
             })
-            ?.rawChampionName.split('_')[3]
+            ?.rawChampionName.split("_")[3];
         }),
-        other: 'Turret',
-        source: event.KillerName.startsWith('Minion')
-          ? 'Minion'
-          : event.KillerName.startsWith('SRU_Herald')
-            ? 'Herald'
-            : // TODO Thats for all other creeps for now until we have some better icons for them
-            event.KillerName.startsWith('SRU')
-              ? 'Minion'
-              : allGameData.allPlayers
-                .find((p) => {
-                  return p.summonerName === event.KillerName
-                })
-                ?.rawChampionName.split('_')[3],
-        team: team === 100 ? 200 : 100
-      })
+        other: "Turret",
+        source: event.KillerName.startsWith("Minion")
+          ? "Minion"
+          : event.KillerName.startsWith("SRU_Herald")
+          ? "Herald"
+          : // TODO Thats for all other creeps for now until we have some better icons for them
+          event.KillerName.startsWith("SRU")
+          ? "Minion"
+          : allGameData.allPlayers
+              .find((p) => {
+                return p.summonerName === event.KillerName;
+              })
+              ?.rawChampionName.split("_")[3],
+        team: team === 100 ? 200 : 100,
+      });
     }
 
-    if (this.gameState.towers[team][lane][turret] === false) return
+    if (this.gameState.towers[team][lane][turret] === false) return;
 
-    this.gameState.towers[team][lane][turret] = false
-    this.updateState()
+    this.gameState.towers[team][lane][turret] = false;
+    this.updateState();
 
     this.ctx.LPTE.emit({
       meta: {
         namespace: this.namespace,
-        type: 'tower-update',
-        version: 1
+        type: "tower-update",
+        version: 1,
       },
       team,
       lane,
-      turret
-    })
+      turret,
+    });
   }
 
   private handleKillEvent(event: Event, allGameData: AllGameData) {
-    if (!this.config.killfeed) return
+    if (!this.config.killfeed) return;
 
     this.ctx.LPTE.emit({
       meta: {
         namespace: this.namespace,
-        type: 'kill-update',
-        version: 1
+        type: "kill-update",
+        version: 1,
       },
       assists: event.Assisters.map((a: string) => {
         return allGameData.allPlayers
           .find((p) => {
-            return p.summonerName === a
+            return p.summonerName === a;
           })
-          ?.rawChampionName.split('_')[3]
+          ?.rawChampionName.split("_")[3];
       }),
       other: allGameData.allPlayers
         .find((p) => {
-          return p.summonerName === event.VictimName
+          return p.summonerName === event.VictimName;
         })
-        ?.rawChampionName.split('_')[3],
-      source: event.KillerName.startsWith('Minion')
-        ? 'Minion'
-        : event.KillerName.startsWith('Turret')
-          ? 'Turret'
-          : event.KillerName.startsWith('SRU_Baron')
-            ? 'Baron'
-            : event.KillerName.startsWith('SRU_Herald')
-              ? 'Herald'
-              : event.KillerName.startsWith('SRU_Dragon')
-                ? 'Dragon'
-                : // TODO Thats for all other creeps for now until we have some better icons for them
-                event.KillerName.startsWith('SRU')
-                  ? 'Minion'
-                  : allGameData.allPlayers
-                    .find((p) => {
-                      return p.summonerName === event.KillerName
-                    })
-                    ?.rawChampionName.split('_')[3],
+        ?.rawChampionName.split("_")[3],
+      source: event.KillerName.startsWith("Minion")
+        ? "Minion"
+        : event.KillerName.startsWith("Turret")
+        ? "Turret"
+        : event.KillerName.startsWith("SRU_Baron")
+        ? "Baron"
+        : event.KillerName.startsWith("SRU_Herald")
+        ? "Herald"
+        : event.KillerName.startsWith("SRU_Dragon")
+        ? "Dragon"
+        : // TODO Thats for all other creeps for now until we have some better icons for them
+        event.KillerName.startsWith("SRU")
+        ? "Minion"
+        : allGameData.allPlayers
+            .find((p) => {
+              return p.summonerName === event.KillerName;
+            })
+            ?.rawChampionName.split("_")[3],
       team:
         allGameData.allPlayers.find((p) => {
-          return p.summonerName === event.VictimName
-        })?.team === 'CHAOS'
+          return p.summonerName === event.VictimName;
+        })?.team === "CHAOS"
           ? 100
-          : 200
-    })
+          : 200,
+    });
   }
 }
