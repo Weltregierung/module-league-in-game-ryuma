@@ -3,5 +3,5 @@ export const ItemEpicness: { [k: string]: number } = {
   Mythic: 6,
   Legendary: 5,
   Epic: 4,
-  Starter: 1
-}
+  Starter: 1,
+};
