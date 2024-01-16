@@ -70,7 +70,9 @@ function nameUpdate(e) {
 
   const team = e.team === 100 ? blueTeam : redTeam;
   const playerDiv = team.children[playerId].querySelector(".nickname");
-  playerDiv.innerText = e.nickname;
+  if (playerDiv) {
+    playerDiv.innerText = e.nickname;
+  }
 }
 
 const inhibDiv = document.querySelector("#inhibDiv");
@@ -129,7 +131,7 @@ function platingsUpdate(e) {
       }
     }
 
-    teamDiv.querySelector(".gold span").innerText = calcK(total * 175);
+    teamDiv.querySelector(".gold span").innerText = calcK(total * 125);
   }
 }
 
@@ -173,8 +175,58 @@ function setGameState(e) {
     const playerId = getPlayerId(id);
 
     const team = id > 4 ? blueTeam : redTeam;
-    const playerDiv = team.children[playerId].querySelector(".nickname");
-    playerDiv.innerText = state.player[i].nickname;
+    const playerDiv = team.children[playerId]?.querySelector(".nickname");
+    // const playerChampion = team.children[playerId]?.querySelector(
+    //   ".player-champion-img"
+    // );
+    // if (playerChampion) {
+    //   playerChampion.src = `http://ddragon.leagueoflegends.com/cdn/13.18.1/img/champion/${state.player[i].championId}.png`;
+    // }
+    // const playerSummoner1 =
+    //   team.children[playerId]?.querySelector(".player-summoner-1");
+    // const playerSummoner2 =
+    //   team.children[playerId]?.querySelector(".player-summoner-2");
+
+    // if (playerSummoner1) {
+    //   let src = "";
+
+    //   if (
+    //     state.player[i].summonerSpells.summonerSpellOne.displayName ===
+    //     "Unleashed Teleport"
+    //   ) {
+    //     src =
+    //       "http://ddragon.leagueoflegends.com/cdn/13.18.1/img/spell/SummonerTeleport.png";
+    //   } else {
+    //     src = `http://ddragon.leagueoflegends.com/cdn/13.18.1/img/spell/${
+    //       state.player[i].summonerSpells.summonerSpellOne.rawDisplayName.split(
+    //         "_"
+    //       )[2]
+    //     }.png`;
+    //   }
+    //   playerSummoner1.src = src;
+    // }
+    // if (playerSummoner2) {
+    //   let src = "";
+
+    //   if (
+    //     state.player[i].summonerSpells.summonerSpellTwo.displayName ===
+    //     "Unleashed Teleport"
+    //   ) {
+    //     src =
+    //       "http://ddragon.leagueoflegends.com/cdn/13.18.1/img/spell/SummonerTeleport.png";
+    //   } else {
+    //     src = `http://ddragon.leagueoflegends.com/cdn/13.18.1/img/spell/Summoner${
+    //       state.player[i].summonerSpells.summonerSpellTwo.rawDisplayName.split(
+    //         "_"
+    //       )[2]
+    //     }.png`;
+    //   }
+    //   playerSummoner2.src = src;
+    // }
+
+    if (playerDiv) {
+      playerDiv.innerText = state.player[i].nickname;
+    }
 
     const xpLbItem = createLeaderBoardItem(state.player[i], 0, "xp");
     const goldLbItem = createLeaderBoardItem(state.player[i], 0, "gold");
@@ -194,6 +246,192 @@ function setGameState(e) {
   } else if (showLeaderBoard === "gold") {
     goldLeaderBoard.classList.add("show");
     xpLeaderBoard.classList.remove("show");
+  }
+}
+
+function getDragonImgUrl(type, isSquare) {
+  let dragonType;
+  switch (type.toLowerCase()) {
+    case "sru_dragon_earth":
+    case "earth":
+      if (isSquare) {
+        dragonType = "Mountain_DrakeSquare.webp";
+      } else {
+        dragonType = "dragonearthminimap.webp";
+      }
+      break;
+    case "sru_dragon_hextech":
+    case "hextech":
+      if (isSquare) {
+        dragonType = "Hextech_DrakeSquare.webp";
+      } else {
+        dragonType = "dragonhextechminimap.webp";
+      }
+      break;
+    case "sru_dragon_chemtech":
+    case "chemtech":
+      if (isSquare) {
+        dragonType = "Chemtech_DrakeSquare.webp";
+      } else {
+        dragonType = "dragonchemtechmini.png";
+      }
+      break;
+    case "sru_dragon_air":
+    case "air":
+      if (isSquare) {
+        dragonType = "Cloud_DrakeSquare.webp";
+      } else {
+        dragonType = "dragonairminimap.webp";
+      }
+      break;
+    case "sru_dragon_fire":
+    case "fire":
+      if (isSquare) {
+        dragonType = "Infernal_DrakeSquare.webp";
+      } else {
+        dragonType = "dragonfireminimap.webp";
+      }
+      break;
+    case "sru_dragon_water":
+    case "water":
+      if (isSquare) {
+        dragonType = "Ocean_DrakeSquare.webp";
+      } else {
+        dragonType = "dragonwaterminimap.webp";
+      }
+      break;
+    default:
+      if (isSquare) {
+        dragonType = "Elder_DragonSquare.webp";
+      } else {
+      }
+      break;
+  }
+
+  if (dragonType) {
+    return `./img/${dragonType}`;
+  }
+
+  return undefined;
+}
+
+function renderDrakes(dragonArray, side) {
+  const dragonContainer = document.querySelector(`.sb-dragons-${side}`);
+  if (dragonContainer.childNodes.length < dragonArray.length) {
+    dragonContainer.innerHTML = "";
+    for (const dragon of dragonArray) {
+      const dragonImageUrl = getDragonImgUrl(dragon.mob);
+      if (dragonImageUrl) {
+        const dragonImage = document.createElement("img");
+        dragonImage.classList.add("sb-dragon-icon");
+        dragonImage.src = dragonImageUrl;
+        dragonContainer.appendChild(dragonImage);
+      }
+    }
+  }
+}
+
+function renderDrakeTimer(blueDrakes, redDrakes, ingameTime, nextDragonType) {
+  let drakeCooldown = 5;
+  if (blueDrakes.length >= 4 || redDrakes.length >= 4) {
+    drakeCooldown = 6;
+  }
+
+  let lastDrakeTimer = Math.max(
+    ...[0, ...[...blueDrakes, ...redDrakes].map((d) => d.time)]
+  );
+
+  if (isNaN(lastDrakeTimer)) {
+    lastDrakeTimer = 0;
+  }
+  const imageUrl = getDragonImgUrl(nextDragonType, true);
+
+  const nextDrakeImage = document.querySelector(`.nextdrakeimage`);
+  if (imageUrl) {
+    nextDrakeImage.src = imageUrl;
+  }
+
+  const nextDrakeTimer = lastDrakeTimer + 60 * drakeCooldown - ingameTime;
+
+  const nextDrakeTimerText = document.querySelector(`.nextdraketimer`);
+
+  if (nextDrakeTimer < 0) {
+    nextDrakeTimerText.innerText = "live";
+    nextDrakeTimerText.classList.add("hideDragon");
+    nextDrakeImage.classList.add("centerDragon");
+  } else {
+    nextDrakeTimerText.classList.remove("hideDragon");
+    nextDrakeImage.classList.remove("centerDragon");
+    const slicedTime = convertSecsToTime(nextDrakeTimer).replace("0", "");
+    nextDrakeTimerText.innerText = slicedTime;
+  }
+}
+
+function dragonsUpdate(objectives, ingameTime, nextDragonType) {
+  const blueDrakes = objectives["100"].filter(
+    (o) => o.type === "OnKillDragon_Spectator"
+  );
+  const redDrakes = objectives["200"].filter(
+    (o) => o.type === "OnKillDragon_Spectator"
+  );
+  renderDrakes(blueDrakes, "blue");
+  renderDrakes(redDrakes, "red");
+  renderDrakeTimer(blueDrakes, redDrakes, ingameTime, nextDragonType);
+}
+
+function updateHeraldOrNashTimer(objectives, ingameTime) {
+  const heraldRespawnIn = 8;
+  const baronRespawnIn = 6;
+  const heraldRespawnThreshhold = 825;
+  const barons = [
+    ...objectives["100"].filter((o) => o.type === "OnKillWorm_Spectator"),
+    ...objectives["200"].filter((o) => o.type === "OnKillWorm_Spectator"),
+  ];
+  const heralds = [
+    ...objectives["100"].filter((o) => o.type === "OnKillRiftHerald_Spectator"),
+    ...objectives["200"].filter((o) => o.type === "OnKillRiftHerald_Spectator"),
+  ];
+
+  const lastHeraldTime = Math.max(...[0, ...heralds.map((d) => d.time)]);
+
+  const lastNashTime = Math.max(...[0, ...barons.map((d) => d.time)]);
+
+  const isBaron = lastHeraldTime > heraldRespawnThreshhold;
+  let imageUrl = `./img/Rift_HeraldSquare.webp`;
+  if (isBaron) {
+    imageUrl = `./img/Baron_NashorSquare.webp`;
+  }
+
+  const nextNashOrHeraldImage = document.querySelector(`.nextheraldnashimage`);
+  if (nextNashOrHeraldImage) {
+    nextNashOrHeraldImage.src = imageUrl;
+  }
+
+  let nextNashOrHeraldTimer = 0;
+  if (isBaron) {
+    if (ingameTime < 20 * 60) {
+      nextNashOrHeraldTimer = 20 * 60 - ingameTime;
+    } else {
+      nextNashOrHeraldTimer = lastNashTime + 60 * baronRespawnIn - ingameTime;
+    }
+  } else {
+    nextNashOrHeraldTimer = lastHeraldTime + 60 * heraldRespawnIn - ingameTime;
+  }
+  const nextNashOrHeraldTimerText =
+    document.querySelector(`.nextheraldnashtimer`);
+
+  if (nextNashOrHeraldTimer < 0) {
+    nextNashOrHeraldTimerText.innerText = "live";
+    nextNashOrHeraldTimerText.classList.add("hideDragon");
+    nextNashOrHeraldImage.classList.add("centerNash");
+  } else {
+    nextNashOrHeraldTimerText.classList.remove("hideDragon");
+    nextNashOrHeraldImage.classList.remove("centerNash");
+    const slicedTime = convertSecsToTime(nextNashOrHeraldTimer).replace(
+      "0",
+      ""
+    );
+    nextNashOrHeraldTimerText.innerText = slicedTime;
   }
 }
 
@@ -238,7 +476,69 @@ function updateGameState(e) {
     value.textContent = newValue;
   }
 
+  updateHeraldOrNashTimer(state.objectives, state.gameTime);
   platingsUpdate(e);
+  dragonsUpdate(state.objectives, state.gameTime, state.nextDragonType);
+
+  for (const [teamId, team] of Object.entries(state.inhibitors)) {
+    for (const [lane, data] of Object.entries(team)) {
+      const teamDiv = parseInt(teamId) === 100 ? blueSide : redSide;
+      const div = teamDiv.querySelector(`.${lane}`);
+
+      if (data.alive) {
+        div.style.setProperty("--percent", "0");
+        div.querySelector("p").innerText = convertSecsToTime(0);
+      } else {
+        div.style.setProperty("--percent", data.percent);
+        div.querySelector("p").innerText = convertSecsToTime(data.respawnIn);
+      }
+    }
+  }
+
+  const goldDiffCol = document.querySelector(`.gold-diff`);
+  for (let index in [0, 1, 2, 3, 4]) {
+    index = Number(index);
+    const index2 = index + 5;
+    let goldDiff =
+      state.player[index].totalGold - state.player[index2].totalGold;
+    if (Math.abs(goldDiff) < 100) {
+      goldDiff = 0;
+      goldDiffCol.children[index].children[0].classList.remove("arrow-visible");
+      goldDiffCol.children[index].children[2].classList.remove("arrow-visible");
+      goldDiffCol.children[index].children[0].classList.add("arrow-hidden");
+      goldDiffCol.children[index].children[2].classList.add("arrow-hidden");
+      goldDiffCol.children[index].children[1].classList.remove("redSideAhead");
+      goldDiffCol.children[index].children[1].classList.remove("blueSideAhead");
+      goldDiffCol.children[index].children[1].classList.add("evenGold");
+    } else if (goldDiff < 0) {
+      // red side is ahead
+      if (Math.abs(goldDiff) < 1000) {
+        goldDiff = Math.round(goldDiff / 100) * 100;
+      }
+      goldDiffCol.children[index].children[1].classList.remove("evenGold");
+      goldDiffCol.children[index].children[1].classList.remove("blueSideAhead");
+      goldDiffCol.children[index].children[1].classList.add("redSideAhead");
+      goldDiffCol.children[index].children[0].classList.remove("arrow-visible");
+      goldDiffCol.children[index].children[0].classList.add("arrow-hidden");
+      goldDiffCol.children[index].children[2].classList.remove("arrow-hidden");
+      goldDiffCol.children[index].children[2].classList.add("arrow-visible");
+    } else if (goldDiff > 0) {
+      // blue side is ahead
+      if (Math.abs(goldDiff) < 1000) {
+        goldDiff = Math.round(goldDiff / 100) * 100;
+      }
+      goldDiffCol.children[index].children[1].classList.remove("evenGold");
+      goldDiffCol.children[index].children[1].classList.remove("redSideAhead");
+      goldDiffCol.children[index].children[1].classList.add("blueSideAhead");
+      goldDiffCol.children[index].children[0].classList.remove("arrow-hidden");
+      goldDiffCol.children[index].children[0].classList.add("arrow-visible");
+      goldDiffCol.children[index].children[2].classList.remove("arrow-visible");
+      goldDiffCol.children[index].children[2].classList.add("arrow-hidden");
+    }
+    goldDiffCol.children[index].children[1].innerText = calcK(
+      Math.abs(goldDiff)
+    );
+  }
 
   if (showLeaderBoard === "gold") {
     const maxGold = Math.max(...state.player.map((p) => p.totalGold));
@@ -314,33 +614,33 @@ function updateGameState(e) {
 
 function ppUpdate(e) {
   const teamDiv = e.team === 100 ? sbBluePP : sbRedPP;
-  const title = teamDiv.querySelector(".pp-text");
+  // const title = teamDiv.querySelector(".pp-text");
   const timer = teamDiv.querySelector(".timer");
-  const gold = teamDiv.querySelector("h1");
+  const gold = teamDiv.querySelector(".gold-amount");
   const image = teamDiv.querySelector("img");
 
   if (!e.ongoing) {
-    title.innerText = e.type;
+    // title.innerText = e.type;
     timer.innerText = convertSecsToTime(0);
     gold.innerText = calcK(e.goldDiff || 0);
 
     teamDiv.classList.add("hide");
   } else {
-    title.innerText = e.type;
-    timer.innerText = convertSecsToTime(e.respawnIn);
+    // title.innerText = e.type;
+    timer.innerText = convertSecsToTime(e.respawnIn, true);
     gold.innerText =
       e.goldDiff < 0 ? calcK(e.goldDiff) : "+" + calcK(e.goldDiff);
 
-    if (e.team === 100) {
-      teamDiv.style.background = `linear-gradient(to left, var(--blue-team) ${
-        e.percent
-      }%, var(--background-light-color) ${e.percent + 3}%)`;
-    }
-    if (e.team === 200) {
-      sbRedPP.style.backgroundImage = `linear-gradient(to right, var(--red-team) ${
-        e.percent
-      }%, var(--background-light-color) ${e.percent + 3}%)`;
-    }
+    // if (e.team === 100) {
+    //   teamDiv.style.background = `linear-gradient(to left, var(--blue-team ${
+    //     e.percent
+    //   }%, transparent ${e.percent + 3}%)`;
+    // }
+    // if (e.team === 200) {
+    //   sbRedPP.style.backgroundImage = `linear-gradient(to right, var(--red-team) ${
+    //     e.percent
+    //   }%, transparent ${e.percent + 3}%)`;
+    // }
     if (e.type === "Dragon") {
       image.src = "img/elder.png";
       teamDiv.classList.add("dragon");
@@ -359,11 +659,13 @@ function ppUpdate(e) {
   }
 }
 
-function convertSecsToTime(secs) {
+function convertSecsToTime(secs, noZero) {
   const newSecs = Math.round(secs);
   const minutes = Math.floor(newSecs / 60);
   const seconds = newSecs % 60;
-  return `${("0" + minutes).slice(-2)}:${("0" + seconds).slice(-2)}`;
+  return `${("0" + minutes).slice(noZero ? -1 : -2)}:${("0" + seconds).slice(
+    -2
+  )}`;
 }
 
 const themeBlue = document
@@ -457,21 +759,27 @@ function changeColors(e) {
   sbBlueScore.innerHTML = "";
   sbRedScore.innerHTML = "";
 
-  for (let i = 0; i < Math.ceil(e.bestOf / 2); i++) {
-    const bluePoint = document.createElement("div");
-    bluePoint.classList.add("sb-score-point");
-    const redPoint = document.createElement("div");
-    redPoint.classList.add("sb-score-point");
+  let maxElements = Math.ceil(e.bestOf / 2);
+  if (e.bestOf === 2) {
+    maxElements = 2;
+  }
+  if (maxElements > 1) {
+    for (let i = 0; i < maxElements; i++) {
+      const bluePoint = document.createElement("div");
+      bluePoint.classList.add("sb-score-point");
+      const redPoint = document.createElement("div");
+      redPoint.classList.add("sb-score-point");
 
-    if (e.teams.blueTeam?.score >= i + 1) {
-      bluePoint.classList.add("sb-score-point-win");
-    }
-    if (e.teams.redTeam?.score >= i + 1) {
-      redPoint.classList.add("sb-score-point-win");
-    }
+      if (e.teams.blueTeam?.score >= i + 1) {
+        bluePoint.classList.add("sb-score-point-win");
+      }
+      if (e.teams.redTeam?.score >= i + 1) {
+        redPoint.classList.add("sb-score-point-win");
+      }
 
-    sbBlueScore.appendChild(bluePoint);
-    sbRedScore.appendChild(redPoint);
+      sbBlueScore.appendChild(bluePoint);
+      sbRedScore.appendChild(redPoint);
+    }
   }
 
   if (e.teams.blueTeam?.color && e.teams.blueTeam?.color !== "#000000") {
@@ -797,6 +1105,10 @@ function createLeaderBoardItem(player, max, type = "xp") {
   return lbItem;
 }
 
+function firstBlood(event) {
+  console.log("event", event);
+}
+
 const isOverflown = ({
   clientHeight,
   scrollHeight,
@@ -993,6 +1305,7 @@ LPTE.onready(async () => {
   LPTE.on("module-league-in-game", "name-update", nameUpdate);
   LPTE.on("module-league-in-game", "set-settings", updateSettings);
   LPTE.on("module-league-in-game", "highlight-player", highlightPlayer);
+  LPTE.on("module-league-in-game", "first-blood", firstBlood);
 
   LPTE.on("module-league-in-game", "show-inhibs", (e) => {
     inhibDiv.classList.remove("hide");

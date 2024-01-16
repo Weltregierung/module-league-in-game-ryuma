@@ -123,6 +123,7 @@ export class InGameState {
         100: [],
         200: [],
       },
+      nextDragonType: "",
     };
 
     this.ctx.LPTE.emit({
@@ -219,7 +220,12 @@ export class InGameState {
             p.team,
             p.championName,
             champ.id,
-            champ.key
+            champ.key,
+            true,
+            0,
+            0,
+            0,
+            0
           )
         );
       });
@@ -311,9 +317,29 @@ export class InGameState {
         )
           continue;
 
+        const otherPlayerData = this.gameData[
+          this.gameData.length - 1
+        ]?.allPlayers?.find((p) => p.championName === champion.name);
+
         this.gameState.player[player].experience = champion.experience;
         this.gameState.player[player].currentGold = champion.currentGold;
         this.gameState.player[player].totalGold = champion.totalGold;
+        this.gameState.player[player].health = champion.health;
+        this.gameState.player[player].maxHealth = champion.maxHealth;
+        this.gameState.player[player].mana = champion.mana;
+        this.gameState.player[player].maxMana = champion.maxMana;
+        if (otherPlayerData) {
+          this.gameState.player[player].otherItems = otherPlayerData.items;
+          this.gameState.player[player].isBot = otherPlayerData.isBot;
+          this.gameState.player[player].isDead = otherPlayerData.isDead;
+          this.gameState.player[player].respawnTimer =
+            otherPlayerData.respawnTimer;
+          this.gameState.player[player].runes = otherPlayerData.runes;
+          this.gameState.player[player].scores = otherPlayerData.scores;
+          this.gameState.player[player].skinID = otherPlayerData.skinID;
+          this.gameState.player[player].summonerSpells =
+            otherPlayerData.summonerSpells;
+        }
       }
 
       if (champion.team === 100) {
@@ -327,6 +353,8 @@ export class InGameState {
       gold100 - gold200;
     this.gameState.gold[100] = gold100;
     this.gameState.gold[200] = gold200;
+
+    this.gameState.nextDragonType = farsightData.nextDragonType;
 
     const state = this.convertGameState();
 
@@ -510,10 +538,15 @@ export class InGameState {
       const goldDifBlue = this.gameState.gold[100] - data.goldBaseBlue;
       const goldDifRed = this.gameState.gold[200] - data.goldBaseRed;
 
+      let goldDiffHelper = 1500;
+      if (this.config.delay === 0) {
+        goldDiffHelper = 0;
+      }
+
       const goldDiff =
         team === 100
-          ? 1500 + goldDifBlue - goldDifRed
-          : 1500 + goldDifRed - goldDifBlue;
+          ? goldDiffHelper + goldDifBlue - goldDifRed
+          : goldDiffHelper + goldDifRed - goldDifBlue;
 
       data.alive = allGameData.allPlayers
         .filter(
@@ -644,10 +677,15 @@ export class InGameState {
       const goldDifBlue = this.gameState.gold[100] - data.goldBaseBlue;
       const goldDifRed = this.gameState.gold[200] - data.goldBaseRed;
 
+      let goldDiffHelper = 1500;
+      if (this.config.delay === 0) {
+        goldDiffHelper = 0;
+      }
+
       const goldDiff =
         team === 100
-          ? 1500 + goldDifBlue - goldDifRed
-          : 1500 + goldDifRed - goldDifBlue;
+          ? goldDiffHelper + goldDifBlue - goldDifRed
+          : goldDiffHelper + goldDifRed - goldDifBlue;
 
       data.alive = allGameData.allPlayers
         .filter(
@@ -849,6 +887,26 @@ export class InGameState {
         this.handleTowerEvent(event, allGameData);
       } else if (event.EventName === "ChampionKill") {
         this.handleKillEvent(event, allGameData);
+        if (
+          (this.gameState.kills[100] === 1 &&
+            this.gameState.kills[200] === 0) ||
+          (this.gameState.kills[100] === 0 && this.gameState.kills[200] === 1)
+        ) {
+          this.ctx.LPTE.emit({
+            meta: {
+              namespace: this.namespace,
+              type: "first-blood",
+              version: 1,
+            },
+            playerName: event.KillerName,
+            team:
+              allGameData.allPlayers.find((p) => {
+                return p.summonerName === event.KillerName;
+              })?.team === "CHAOS"
+                ? 100
+                : 200,
+          });
+        }
       }
     });
   }
