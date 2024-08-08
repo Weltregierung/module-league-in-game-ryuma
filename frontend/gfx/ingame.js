@@ -387,26 +387,39 @@ function dragonsUpdate(objectives, ingameTime, nextDragonType) {
   renderDrakeTimer(blueDrakes, redDrakes, ingameTime, nextDragonType);
 }
 
-function updateHeraldOrNashTimer(objectives, ingameTime) {
-  const heraldRespawnIn = 8;
+function updateGrubOrHeraldOrNashTimer(objectives, ingameTime) {
+  const grubSpawnIn = 5;
+  const grubRespawnIn = 4;
+  const grubRespawnThreshhold = 585;
+
+  const heraldSpawnIn = 14;
+  const baronSpawnIn = 20;
   const baronRespawnIn = 6;
-  const heraldRespawnThreshhold = 825;
-  const barons = [
-    ...objectives["100"].filter((o) => o.type === "OnKillWorm_Spectator"),
-    ...objectives["200"].filter((o) => o.type === "OnKillWorm_Spectator"),
+
+  const grubs = [
+    ...objectives["100"].filter((o) => o.type === "OnKillHorde_Spectator"), // TODO change this to grubs once i know which is it
+    ...objectives["200"].filter((o) => o.type === "OnKillHorde_Spectator"),
   ];
   const heralds = [
     ...objectives["100"].filter((o) => o.type === "OnKillRiftHerald_Spectator"),
     ...objectives["200"].filter((o) => o.type === "OnKillRiftHerald_Spectator"),
   ];
+  const barons = [
+    ...objectives["100"].filter((o) => o.type === "OnKillWorm_Spectator"),
+    ...objectives["200"].filter((o) => o.type === "OnKillWorm_Spectator"),
+  ];
 
-  const lastHeraldTime = Math.max(...[0, ...heralds.map((d) => d.time)]);
+  const lastGrubTime = Math.max(...[0, ...grubs.map((d) => d.time)]);
 
   const lastNashTime = Math.max(...[0, ...barons.map((d) => d.time)]);
 
-  const isBaron = lastHeraldTime > heraldRespawnThreshhold;
-  let imageUrl = `./img/Rift_HeraldSquare.webp`;
-  if (isBaron) {
+  const isHerald = lastGrubTime > grubRespawnThreshhold;
+  const isBaron = ingameTime > 20 * 60 || heralds.length > 0;
+
+  let imageUrl = `./img/VoidgrubSquare.webp`;
+  if (isHerald) {
+    imageUrl = `./img/Rift_HeraldSquare.webp`;
+  } else if (isBaron) {
     imageUrl = `./img/Baron_NashorSquare.webp`;
   }
 
@@ -415,27 +428,35 @@ function updateHeraldOrNashTimer(objectives, ingameTime) {
     nextNashOrHeraldImage.src = imageUrl;
   }
 
-  let nextNashOrHeraldTimer = 0;
+  let nextGrubOrNashOrHeraldTimer = 0;
   if (isBaron) {
-    if (ingameTime < 20 * 60) {
-      nextNashOrHeraldTimer = 20 * 60 - ingameTime;
+    if (ingameTime < baronSpawnIn * 60) {
+      nextGrubOrNashOrHeraldTimer = baronSpawnIn * 60 - ingameTime;
     } else {
-      nextNashOrHeraldTimer = lastNashTime + 60 * baronRespawnIn - ingameTime;
+      nextGrubOrNashOrHeraldTimer =
+        lastNashTime + 60 * baronRespawnIn - ingameTime;
     }
+  } else if (isHerald) {
+    nextGrubOrNashOrHeraldTimer = heraldSpawnIn * 60 - ingameTime;
   } else {
-    nextNashOrHeraldTimer = lastHeraldTime + 60 * heraldRespawnIn - ingameTime;
+    if (ingameTime < grubSpawnIn * 60) {
+      nextGrubOrNashOrHeraldTimer = grubSpawnIn * 60 - ingameTime;
+    } else {
+      nextGrubOrNashOrHeraldTimer =
+        lastGrubTime + 60 * grubRespawnIn - ingameTime;
+    }
   }
   const nextNashOrHeraldTimerText =
     document.querySelector(`.nextheraldnashtimer`);
 
-  if (nextNashOrHeraldTimer < 0) {
+  if (nextGrubOrNashOrHeraldTimer < 0) {
     nextNashOrHeraldTimerText.innerText = "live";
     nextNashOrHeraldTimerText.classList.add("hideDragon");
     nextNashOrHeraldImage.classList.add("centerNash");
   } else {
     nextNashOrHeraldTimerText.classList.remove("hideDragon");
     nextNashOrHeraldImage.classList.remove("centerNash");
-    const slicedTime = convertSecsToTime(nextNashOrHeraldTimer).replace(
+    const slicedTime = convertSecsToTime(nextGrubOrNashOrHeraldTimer).replace(
       "0",
       ""
     );
@@ -484,7 +505,7 @@ function updateGameState(e) {
     value.textContent = newValue;
   }
 
-  updateHeraldOrNashTimer(state.objectives, state.gameTime);
+  updateGrubOrHeraldOrNashTimer(state.objectives, state.gameTime);
   platingsUpdate(e);
   dragonsUpdate(state.objectives, state.gameTime, state.nextDragonType);
 
