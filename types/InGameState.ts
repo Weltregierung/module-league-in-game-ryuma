@@ -3,6 +3,7 @@ import { Item, Rune, Scores, SummonerSpell } from "./AllGameData";
 
 export interface InGameState {
   gameTime: number;
+  currentPlayer: string;
   showLeaderBoard: "xp" | "gold" | false;
   towers: {
     100: TowerState;

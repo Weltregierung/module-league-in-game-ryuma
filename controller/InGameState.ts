@@ -29,6 +29,10 @@ export class InGameState {
     private state: any,
     private statics: any
   ) {
+    setInterval(() => {
+      this.sendGameState();
+    }, 500);
+
     this.itemEpicness = this.config.items?.map((i) => ItemEpicness[i]);
 
     this.gameState = {
@@ -126,14 +130,7 @@ export class InGameState {
       nextDragonType: "",
     };
 
-    this.ctx.LPTE.emit({
-      meta: {
-        namespace: this.namespace,
-        type: "update",
-        version: 1,
-      },
-      state: this.convertGameState(),
-    });
+    this.sendGameState();
 
     this.ctx.LPTE.emit({
       meta: {
@@ -160,6 +157,17 @@ export class InGameState {
     });
 
     this.updateState();
+  }
+
+  private sendGameState() {
+    this.ctx.LPTE.emit({
+      meta: {
+        namespace: this.namespace,
+        type: "update",
+        version: 1,
+      },
+      state: this.convertGameState(),
+    });
   }
 
   private convertGameState() {
@@ -419,6 +427,18 @@ export class InGameState {
           },
           name: "Dragon",
           type: this.convertDragon(event.other),
+          team,
+          time,
+        });
+      } else if (event.eventname === EventType.GrubKill) {
+        this.ctx.LPTE.emit({
+          meta: {
+            namespace: this.namespace,
+            type: "event",
+            version: 1,
+          },
+          name: "Grub",
+          type: "Grub",
           team,
           time,
         });

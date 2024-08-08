@@ -136,18 +136,21 @@ function testEvent(team) {
   LPTE.emit({
     meta: {
       namespace: "module-league-in-game",
-      type: "test-event",
+      type: "addObjective",
       version: 1,
     },
-    team,
-    event:
+    name: "Dragon",
+    eventname: "OnKillDragon_Spectator",
+    other:
       document.getElementById("events-test").selectedIndex === 0
         ? document.getElementById("dragons-test").options[
             document.getElementById("dragons-test").selectedIndex
-          ].text
+          ].value
         : document.getElementById("events-test").options[
             document.getElementById("events-test").selectedIndex
-          ].text,
+          ].value,
+    sourceTeam: team,
+    team: team,
   });
 }
 function testKillfeed(team) {

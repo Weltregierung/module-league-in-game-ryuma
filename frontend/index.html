@@ -467,18 +467,18 @@
     <option>Baron</option>
   </select>
   <select class="form-control" id="dragons-test" style="width: 24%">
-    <option selected>Chemtech</option>
-    <option>Cloud</option>
-    <option>Elder</option>
-    <option>Hextech</option>
-    <option>Infernal</option>
-    <option>Mountain</option>
-    <option>Ocean</option>
+    <option selected value="SRU_Dragon_Chemtech">Chemtech</option>
+    <option value="SRU_Dragon_Air">Cloud</option>
+    <option value="SRU_Dragon_Elder">Elder</option>
+    <option value="SRU_Dragon_Hextech">Hextech</option>
+    <option value="SRU_Dragon_Fire">Infernal</option>
+    <option value="SRU_Dragon_Earth">Mountain</option>
+    <option value="SRU_Dragon_Water">Ocean</option>
   </select>
-  <button class="btn btn-primary btn-lg" onclick="testEvent(100)">
+  <button class="btn btn-primary btn-lg" onclick="testEvent('Order')">
     Test Blue team
   </button>
-  <button class="btn btn-danger btn-lg" onclick="testEvent(200)">
+  <button class="btn btn-danger btn-lg" onclick="testEvent('Chaos')">
     Test Red Team
   </button>
 </div>

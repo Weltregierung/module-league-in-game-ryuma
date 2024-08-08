@@ -517,49 +517,49 @@ function updateGameState(e) {
   }
 
   const goldDiffCol = document.querySelector(`.gold-diff`);
-  for (let index in [0, 1, 2, 3, 4]) {
-    index = Number(index);
-    const index2 = index + 5;
-    let goldDiff =
-      state.player[index].totalGold - state.player[index2].totalGold;
-    if (Math.abs(goldDiff) < 100) {
-      goldDiff = 0;
-      goldDiffCol.children[index].children[0].classList.remove("arrow-visible");
-      goldDiffCol.children[index].children[2].classList.remove("arrow-visible");
-      goldDiffCol.children[index].children[0].classList.add("arrow-hidden");
-      goldDiffCol.children[index].children[2].classList.add("arrow-hidden");
-      goldDiffCol.children[index].children[1].classList.remove("redSideAhead");
-      goldDiffCol.children[index].children[1].classList.remove("blueSideAhead");
-      goldDiffCol.children[index].children[1].classList.add("evenGold");
-    } else if (goldDiff < 0) {
-      // red side is ahead
-      if (Math.abs(goldDiff) < 1000) {
-        goldDiff = Math.round(goldDiff / 100) * 100;
-      }
-      goldDiffCol.children[index].children[1].classList.remove("evenGold");
-      goldDiffCol.children[index].children[1].classList.remove("blueSideAhead");
-      goldDiffCol.children[index].children[1].classList.add("redSideAhead");
-      goldDiffCol.children[index].children[0].classList.remove("arrow-visible");
-      goldDiffCol.children[index].children[0].classList.add("arrow-hidden");
-      goldDiffCol.children[index].children[2].classList.remove("arrow-hidden");
-      goldDiffCol.children[index].children[2].classList.add("arrow-visible");
-    } else if (goldDiff > 0) {
-      // blue side is ahead
-      if (Math.abs(goldDiff) < 1000) {
-        goldDiff = Math.round(goldDiff / 100) * 100;
-      }
-      goldDiffCol.children[index].children[1].classList.remove("evenGold");
-      goldDiffCol.children[index].children[1].classList.remove("redSideAhead");
-      goldDiffCol.children[index].children[1].classList.add("blueSideAhead");
-      goldDiffCol.children[index].children[0].classList.remove("arrow-hidden");
-      goldDiffCol.children[index].children[0].classList.add("arrow-visible");
-      goldDiffCol.children[index].children[2].classList.remove("arrow-visible");
-      goldDiffCol.children[index].children[2].classList.add("arrow-hidden");
-    }
-    goldDiffCol.children[index].children[1].innerText = calcK(
-      Math.abs(goldDiff)
-    );
-  }
+  // for (let index in [0, 1, 2, 3, 4]) {
+  //   index = Number(index);
+  //   const index2 = index + 5;
+  //   let goldDiff =
+  //     state.player[index].totalGold - state.player[index2].totalGold;
+  //   if (Math.abs(goldDiff) < 100) {
+  //     goldDiff = 0;
+  //     goldDiffCol.children[index].children[0].classList.remove("arrow-visible");
+  //     goldDiffCol.children[index].children[2].classList.remove("arrow-visible");
+  //     goldDiffCol.children[index].children[0].classList.add("arrow-hidden");
+  //     goldDiffCol.children[index].children[2].classList.add("arrow-hidden");
+  //     goldDiffCol.children[index].children[1].classList.remove("redSideAhead");
+  //     goldDiffCol.children[index].children[1].classList.remove("blueSideAhead");
+  //     goldDiffCol.children[index].children[1].classList.add("evenGold");
+  //   } else if (goldDiff < 0) {
+  //     // red side is ahead
+  //     if (Math.abs(goldDiff) < 1000) {
+  //       goldDiff = Math.round(goldDiff / 100) * 100;
+  //     }
+  //     goldDiffCol.children[index].children[1].classList.remove("evenGold");
+  //     goldDiffCol.children[index].children[1].classList.remove("blueSideAhead");
+  //     goldDiffCol.children[index].children[1].classList.add("redSideAhead");
+  //     goldDiffCol.children[index].children[0].classList.remove("arrow-visible");
+  //     goldDiffCol.children[index].children[0].classList.add("arrow-hidden");
+  //     goldDiffCol.children[index].children[2].classList.remove("arrow-hidden");
+  //     goldDiffCol.children[index].children[2].classList.add("arrow-visible");
+  //   } else if (goldDiff > 0) {
+  //     // blue side is ahead
+  //     if (Math.abs(goldDiff) < 1000) {
+  //       goldDiff = Math.round(goldDiff / 100) * 100;
+  //     }
+  //     goldDiffCol.children[index].children[1].classList.remove("evenGold");
+  //     goldDiffCol.children[index].children[1].classList.remove("redSideAhead");
+  //     goldDiffCol.children[index].children[1].classList.add("blueSideAhead");
+  //     goldDiffCol.children[index].children[0].classList.remove("arrow-hidden");
+  //     goldDiffCol.children[index].children[0].classList.add("arrow-visible");
+  //     goldDiffCol.children[index].children[2].classList.remove("arrow-visible");
+  //     goldDiffCol.children[index].children[2].classList.add("arrow-hidden");
+  //   }
+  //   goldDiffCol.children[index].children[1].innerText = calcK(
+  //     Math.abs(goldDiff)
+  //   );
+  // }
 
   if (showLeaderBoard === "gold") {
     const maxGold = Math.max(...state.player.map((p) => p.totalGold));
