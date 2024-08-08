@@ -17,6 +17,7 @@ export type InGameEvent =
     };
 
 export enum EventType {
+  GrubKill = "OnKillHorde_Spectator",
   DragonKill = "OnKillDragon_Spectator",
   HeraldKill = "OnKillRiftHerald_Spectator",
   BaronKill = "OnKillWorm_Spectator",
