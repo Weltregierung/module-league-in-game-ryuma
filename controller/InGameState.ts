@@ -379,7 +379,8 @@ export class InGameState {
   }
 
   public handelEvent(event: InGameEvent): void {
-    if (!Object.values(EventType).includes(event.eventname)) return;
+    console.log("event", event);
+    // if (!Object.values(EventType).includes(event.eventname)) return;
     if (event.eventname === EventType.StructureKill) return;
 
     setTimeout(() => {
@@ -416,7 +417,7 @@ export class InGameState {
         this.config.events?.includes("Dragons")
       ) {
         if (event.other === MobType.ElderDragon) {
-          this.elderKill(event);
+          // this.elderKill(event);
         }
 
         this.ctx.LPTE.emit({
