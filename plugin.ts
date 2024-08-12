@@ -108,11 +108,13 @@ module.exports = async (ctx: PluginContext) => {
     const state = stateRes?.state;
 
     ctx.LPTE.on("lcu", "lcu-champ-select-create", () => {
+      inGameState.stopInterval();
       inGameState = new InGameState(namespace, ctx, config, state, statics);
     });
 
     ctx.LPTE.on(namespace, "reset-game", () => {
       ctx.log.info("Resetting in game data");
+      inGameState.stopInterval();
       inGameState = new InGameState(namespace, ctx, config, state, statics);
     });
 
@@ -195,6 +197,14 @@ module.exports = async (ctx: PluginContext) => {
   ctx.LPTE.on(namespace, "hide-leader-board", (e) => {
     if (inGameState === undefined) return;
     inGameState.gameState.showLeaderBoard = false;
+  });
+
+  ctx.LPTE.on(namespace, "addObjective", (e: any) => {
+    inGameState.handelEvent(e);
+  });
+
+  ctx.LPTE.on(namespace, "setNextDragonType", (e: any) => {
+    inGameState.setNextDragonType(e.type);
   });
 
   // Emit event that we're ready to operate
