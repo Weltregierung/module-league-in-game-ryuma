@@ -12,12 +12,14 @@ import {
 import { randomUUID } from "crypto";
 import { FarsightData } from "../types/FarsightData";
 import { Player as PlayerClass } from "./Player";
+import { clearInterval } from "timers";
 
 export class InGameState {
   public gameState: InGameStateType;
   public gameData: AllGameData[] = [];
   public farsightDataArray: FarsightData[] = [];
   public itemEpicness: number[];
+  private interval: NodeJS.Timer;
 
   public actions: Map<string, (allGameData: AllGameData, id: string) => void> =
     new Map();
@@ -29,7 +31,7 @@ export class InGameState {
     private state: any,
     private statics: any
   ) {
-    setInterval(() => {
+    this.interval = setInterval(() => {
       this.sendGameState();
     }, 500);
 
@@ -157,6 +159,10 @@ export class InGameState {
     });
 
     this.updateState();
+  }
+
+  public stopInterval() {
+    clearInterval(this.interval);
   }
 
   private sendGameState() {
@@ -378,6 +384,10 @@ export class InGameState {
     }, this.config.delay / 2);
   }
 
+  public setNextDragonType(nextDragonType: string) {
+    this.gameState.nextDragonType = nextDragonType;
+  }
+
   public handelEvent(event: InGameEvent): void {
     console.log("event", event);
     // if (!Object.values(EventType).includes(event.eventname)) return;
@@ -385,8 +395,10 @@ export class InGameState {
 
     setTimeout(() => {
       const team = event.sourceTeam === TeamType.Order ? 100 : 200;
-      const time =
+      let time =
         this.gameData[this.gameData.length - 1]?.gameData.gameTime ?? 0;
+
+      time = time - this.config.delay / 1000;
 
       if (event.eventname === EventType.TurretPlateDestroyed) {
         const split = event.other.split("_") as string[];
@@ -438,7 +450,7 @@ export class InGameState {
             type: "event",
             version: 1,
           },
-          name: "Grub",
+          name: `Grub x${event.other}`,
           type: "Grub",
           team,
           time,

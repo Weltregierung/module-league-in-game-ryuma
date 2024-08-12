@@ -357,11 +357,7 @@ function renderDrakeTimer(blueDrakes, redDrakes, ingameTime, nextDragonType) {
 
   if (nextDrakeTimer < 0) {
     nextDrakeTimerText.innerText = "live";
-    nextDrakeTimerText.classList.add("hideDragon");
-    nextDrakeImage.classList.add("centerDragon");
   } else {
-    nextDrakeTimerText.classList.remove("hideDragon");
-    nextDrakeImage.classList.remove("centerDragon");
     const slicedTime = convertSecsToTime(nextDrakeTimer).replace("0", "");
     nextDrakeTimerText.innerText = slicedTime;
   }
@@ -374,13 +370,19 @@ function dragonsUpdate(objectives, ingameTime, nextDragonType) {
   const redDrakes = objectives["200"].filter(
     (o) => o.type === "OnKillDragon_Spectator"
   );
+  if (blueDrakes.length === 0 && redDrakes.length === 0) {
+    const blueDragonContainer = document.querySelector(`.sb-dragons-blue`);
+    const redDragonContainer = document.querySelector(`.sb-dragons-red`);
+    blueDragonContainer.replaceChildren();
+    redDragonContainer.replaceChildren();
+  }
   renderDrakes(blueDrakes, "blue");
   renderDrakes(redDrakes, "red");
   renderDrakeTimer(blueDrakes, redDrakes, ingameTime, nextDragonType);
 }
 
 function updateGrubOrHeraldOrNashTimer(objectives, ingameTime) {
-  const grubSpawnIn = 5;
+  const grubSpawnIn = 6;
   const grubRespawnIn = 4;
   const grubRespawnThreshhold = 585;
 
@@ -409,10 +411,10 @@ function updateGrubOrHeraldOrNashTimer(objectives, ingameTime) {
   const isBaron = ingameTime > 20 * 60 || heralds.length > 0;
 
   let imageUrl = `./img/VoidgrubSquare.webp`;
-  if (isHerald) {
-    imageUrl = `./img/Rift_HeraldSquare.webp`;
-  } else if (isBaron) {
+  if (isBaron) {
     imageUrl = `./img/Baron_NashorSquare.webp`;
+  } else if (isHerald) {
+    imageUrl = `./img/Rift_HeraldSquare.webp`;
   }
 
   const nextNashOrHeraldImage = document.querySelector(`.nextheraldnashimage`);
@@ -442,12 +444,8 @@ function updateGrubOrHeraldOrNashTimer(objectives, ingameTime) {
     document.querySelector(`.nextheraldnashtimer`);
 
   if (nextGrubOrNashOrHeraldTimer < 0) {
-    nextNashOrHeraldTimerText.innerText = "live";
-    nextNashOrHeraldTimerText.classList.add("hideDragon");
-    nextNashOrHeraldImage.classList.add("centerNash");
+    nextNashOrHeraldTimerText.innerText = "LIVE";
   } else {
-    nextNashOrHeraldTimerText.classList.remove("hideDragon");
-    nextNashOrHeraldImage.classList.remove("centerNash");
     const slicedTime = convertSecsToTime(nextGrubOrNashOrHeraldTimer).replace(
       "0",
       ""
