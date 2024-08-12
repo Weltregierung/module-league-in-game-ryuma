@@ -464,11 +464,11 @@ body {
 
   transform: translateX(-200%);
   transition: transform 1s ease;
-  border-color: #793bfe;
-  border-width: 4px 4px 4px 0px;
-  border-style: solid;
-  background-color: #00000000;
-  background-image: url(./img/bg.png);
+  /* border-color: #793bfe; */
+  /* border-width: 4px 4px 4px 0px; */
+  /* border-style: solid; */
+  background-color: #1700a5;
+  /* background-image: url(./img/bg.png); */
   background-position: center;
 }
 
@@ -540,6 +540,69 @@ body {
 }
 .event.baron .event-img {
   top: 28% !important;
+}
+
+.first-blood {
+  position: absolute;
+  bottom: 0px;
+  left: 0;
+  right: 0;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 0px;
+  width: 700px;
+  height: 230px;
+
+  padding-top: 25px;
+  z-index: 100;
+
+  text-align: center;
+  color: var(--text-color);
+
+  transform: translateY(200%);
+  transition: transform 1s ease;
+  background-color: #1700a5;
+  background-position: center;
+  display: flex;
+  justify-content: center;
+}
+
+.first-blood-show {
+  transform: translateY(0);
+}
+
+.first-blood-textcontainer {
+  position: absolute;
+  gap: 10px;
+  left: 50px;
+  text-align: left;
+}
+
+.player-img {
+  position: absolute;
+  bottom: 0px;
+  right: 20px;
+  margin-left: auto;
+  margin-right: auto;
+  width: 300px;
+}
+
+.first-blood-animation {
+  position: absolute;
+  bottom: -190px;
+  left: -40%;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 0px;
+  padding-top: 25px;
+  z-index: 100;
+  /* width: 500px; */
+
+  color: var(--text-color);
+
+  /* transform: translateY(200%); */
+  transition: transform 1s ease;
+  display: none;
 }
 
 .team {
@@ -740,13 +803,15 @@ body {
 
 /* ---------------------- */
 
+/* currently not in use */
 #tab {
+  display: none;
   position: absolute;
   bottom: 8px;
   left: 605px;
   width: 724px;
   height: 192px;
-  display: flex;
+  /* display: flex; */
 }
 
 .gold-diff {
@@ -871,7 +936,7 @@ body {
   display: flex;
   flex-direction: row;
   padding: 0px;
-  /* background-color: white; */
+  background-color: #1700a5;
 }
 
 .nextdrakeimage {
@@ -888,7 +953,8 @@ body {
   font-family: ryuma;
   font-weight: bold;
   color: white;
-  padding-left: 5px;
+  text-align: center;
+  width: 90px;
 }
 
 .heraldnashtimer {
@@ -897,6 +963,7 @@ body {
   right: 0;
   display: flex;
   flex-direction: row-reverse;
+  background-color: #1700a5;
 }
 
 .nextheraldnashimage {
@@ -912,8 +979,9 @@ body {
   font-size: 68px;
   font-family: ryuma;
   font-weight: bold;
-  padding-right: 5px;
   color: white;
+  text-align: center;
+  width: 90px;
 }
 
 .sb-middle {
@@ -1370,7 +1438,4 @@ body {
 #gg-holder {
   width: 100%;
   height: 100%;
-}
-.strokeme {
-  /* text-shadow: -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff; */
 }

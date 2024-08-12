@@ -357,7 +357,11 @@ function renderDrakeTimer(blueDrakes, redDrakes, ingameTime, nextDragonType) {
 
   if (nextDrakeTimer < 0) {
     nextDrakeTimerText.innerText = "live";
+    // nextDrakeTimerText.classList.add("hideDragon");
+    // nextDrakeImage.classList.add("centerDragon");
   } else {
+    // nextDrakeTimerText.classList.remove("hideDragon");
+    // nextDrakeImage.classList.remove("centerDragon");
     const slicedTime = convertSecsToTime(nextDrakeTimer).replace("0", "");
     nextDrakeTimerText.innerText = slicedTime;
   }
@@ -445,7 +449,11 @@ function updateGrubOrHeraldOrNashTimer(objectives, ingameTime) {
 
   if (nextGrubOrNashOrHeraldTimer < 0) {
     nextNashOrHeraldTimerText.innerText = "LIVE";
+    // nextNashOrHeraldTimerText.classList.add("hideDragon");
+    // nextNashOrHeraldImage.classList.add("centerNash");
   } else {
+    // nextNashOrHeraldTimerText.classList.remove("hideDragon");
+    // nextNashOrHeraldImage.classList.remove("centerNash");
     const slicedTime = convertSecsToTime(nextGrubOrNashOrHeraldTimer).replace(
       "0",
       ""
@@ -1124,8 +1132,38 @@ function createLeaderBoardItem(player, max, type = "xp") {
   return lbItem;
 }
 
-function firstBlood(event) {
-  console.log("event", event);
+function firstBlood(firstBloodEvent) {
+  firstBloodEvent.playerName = "RYU Betonmischer";
+  // const playerNames = ['1000 Sterne','RYU Betonmischer','RYU Felix','RYU Excaliburt','RYU Twendddy','RYU Honest']
+  const playerNames = [];
+  console.log("firstBlood");
+  console.log("event", firstBloodEvent);
+  if (!playerNames.includes(firstBloodEvent.playerName)) {
+    return;
+  }
+
+  const firstBloodDiv = document.querySelector(".first-blood");
+  const playerName = firstBloodDiv.querySelector(".player-name");
+  playerName.querySelector("span").innerText = firstBloodEvent.playerName;
+  firstBloodDiv.querySelector(
+    ".player-img"
+  ).src = `img/player/${firstBloodEvent.playerName
+    .toLowerCase()
+    .replace(" ", "")}.png`;
+
+  firstBloodDiv.classList.add("first-blood-show");
+
+  setTimeout(() => {
+    firstBloodDiv.classList.remove("first-blood-show");
+  }, 5000);
+
+  const firstBloodAnimation = document.querySelector(".first-blood-animation");
+  setTimeout(() => {
+    firstBloodAnimation.style.display = "block";
+  }, 1500);
+  setTimeout(() => {
+    firstBloodAnimation.style.display = "none";
+  }, 6500);
 }
 
 const isOverflown = ({
